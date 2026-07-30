@@ -584,6 +584,115 @@ local function add_deep_entries(entries, new_prototypes)
   end
 end
 
+
+local function distance_marker_sprite(color)
+  local filename = "__extended-undergrounds__/graphics/distance-marker-yellow.png"
+  if color == "green" then
+    filename = "__extended-undergrounds__/graphics/distance-marker-green.png"
+  end
+
+  return {
+    filename = filename,
+    size = 64,
+    scale = 0.5,
+    priority = "high"
+  }
+end
+
+local function distance_marker_layer(color, shift)
+  local layer = distance_marker_sprite(color)
+  layer.shift = shift
+  return layer
+end
+
+local function marker_distances(max_distance)
+  local distances = {}
+  local step = 20
+
+  while step < max_distance do
+    table.insert(distances, {distance = step, color = "yellow"})
+    step = step + 20
+  end
+
+  table.insert(distances, {distance = max_distance, color = "green"})
+  return distances
+end
+
+local function set_radius_visualisation(prototype, sprite, offset, distance)
+  prototype.radius_visualisation_specification = {
+    sprite = sprite,
+    distance = distance == nil and 1 or distance,
+    offset = offset,
+    draw_in_cursor = true,
+    draw_on_selection = false
+  }
+end
+
+local function apply_belt_distance_markers(name, underground_belt)
+  if type(underground_belt.max_distance) ~= "number" then
+    write_log("Skipping cursor marker for underground belt '" .. name .. "' because max_distance is not numeric.")
+    return
+  end
+
+  set_radius_visualisation(underground_belt, distance_marker_sprite("green"), {0, -underground_belt.max_distance})
+end
+
+local function pipe_marker_distance(name, pipe_to_ground)
+  local fluid_box = type(pipe_to_ground.fluid_box) == "table" and pipe_to_ground.fluid_box or nil
+  if type(fluid_box) ~= "table" or type(fluid_box.pipe_connections) ~= "table" then
+    return nil, "missing fluid_box.pipe_connections"
+  end
+
+  local distances = {}
+  for _, pipe_connection in pairs(fluid_box.pipe_connections) do
+    if type(pipe_connection) == "table" and
+      pipe_connection.connection_type == "underground" and
+      type(pipe_connection.max_underground_distance) == "number" then
+      distances[pipe_connection.max_underground_distance] = true
+    end
+  end
+
+  local distance
+  local count = 0
+  for candidate in pairs(distances) do
+    distance = candidate
+    count = count + 1
+  end
+
+  if count == 0 then
+    return nil, "no underground pipe connection with numeric max_underground_distance"
+  end
+
+  if count > 1 then
+    return nil, "multiple underground pipe distances were found"
+  end
+
+  return distance, nil
+end
+
+local function apply_pipe_distance_markers(name, pipe_to_ground)
+  local distance, reason = pipe_marker_distance(name, pipe_to_ground)
+  if not distance then
+    write_log("Skipping cursor markers for pipe-to-ground '" .. name .. "' because " .. reason .. ".")
+    return
+  end
+
+  set_radius_visualisation(pipe_to_ground, distance_marker_sprite("green"), {0, distance})
+end
+
+local function apply_distance_markers()
+  for name, underground_belt in pairs(data.raw["underground-belt"] or {}) do
+    if type(underground_belt) == "table" then
+      apply_belt_distance_markers(name, underground_belt)
+    end
+  end
+
+  for name, pipe_to_ground in pairs(data.raw["pipe-to-ground"] or {}) do
+    if type(pipe_to_ground) == "table" then
+      apply_pipe_distance_markers(name, pipe_to_ground)
+    end
+  end
+end
 local belt_multiplier = startup_setting_value("extended-undergrounds-belt-distance-multiplier", 1.0)
 local pipe_multiplier = startup_setting_value("extended-undergrounds-pipe-distance-multiplier", 1.0)
 local add_deep_belts = startup_setting_value("extended-undergrounds-add-deep-underground-belts", true)
@@ -649,3 +758,5 @@ end
 if #new_prototypes > 0 then
   data:extend(new_prototypes)
 end
+
+apply_distance_markers()

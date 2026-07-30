@@ -1,6 +1,6 @@
 # Extended Undergrounds
 
-Extended Undergrounds extends existing underground belts and pipe-to-ground entities in Factorio 2.0. It can also add darker deep variants that use a separate underground layer from the normal version.
+Extended Undergrounds extends existing underground belts and pipe-to-ground entities in Factorio 2.0. It can also add darker deep variants that use a separate underground layer from the normal version and show distance markers for underground reach.
 
 The distance multiplier feature only changes distance fields on existing prototypes. The deep feature adds new entities, items, and recipes derived from compatible existing underground belts and pipe-to-ground prototypes.
 
@@ -57,6 +57,21 @@ Deep variants reuse the original image files and add prototype tint only. The de
 
 Tint is applied only to known sprite fields for underground belts and pipe-to-ground prototypes, plus item icons. Image files are not copied or edited.
 
+
+## Distance Markers
+
+This mod adds small yellow and green marker sprites for underground reach:
+
+- Yellow markers show each 10-tile interval before the maximum distance in the hover display.
+- Green markers show the maximum connection distance.
+- When a marker interval lands exactly on the maximum distance, the maximum tile gets only the green marker.
+- When the maximum distance is below the marker interval, only the green marker is shown.
+
+When holding an underground belt or pipe-to-ground item, Factorio's `radius_visualisation_specification` shows the markers immediately in the build cursor. `draw_in_cursor` is enabled and `draw_on_selection` is disabled.
+
+When hovering an already-built underground belt or pipe-to-ground entity, runtime rendering shows the same markers after the same player keeps the cursor on that entity for 12 consecutive ticks. Moving the cursor away, changing surface, leaving the game, or changing the selected entity clears that player's markers. The runtime code tracks only players waiting for the hover delay and does not scan all underground entities.
+
+Runtime markers are rendered only for the local player that triggered them. Underground belts show markers forward and backward from the entity direction. Pipe-to-ground entities show markers north, east, south, and west.
 ## Compatibility With Other Mods
 
 Prototype names are not hard-coded. Normal underground belts and pipe-to-ground prototypes added by other mods are handled when they use standard Factorio prototype fields.
@@ -78,4 +93,4 @@ This mod clamps calculated distances to `1..255` and never writes a value above 
 
 Distance changes and deep prototype generation run in `data-final-fixes.lua` so most other mods have already created their prototypes. If another mod changes the same distances or generated prototypes later in its own `data-final-fixes.lua`, the final value can depend on load order and may conflict.
 
-No dependencies on specific third-party mods are declared.
+An optional load-order dependency on `show-max-underground-distance` is declared only so Extended Undergrounds applies its own cursor marker definitions after that mod when both are installed. No code, images, or file structure are copied from it.
