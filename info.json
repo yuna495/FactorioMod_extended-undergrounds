@@ -1,0 +1,11 @@
+{
+  "name": "extended-undergrounds",
+  "version": "1.0.0",
+  "title": "Extended Undergrounds",
+  "author": "yuna495",
+  "factorio_version": "2.0",
+  "description": "Extends existing underground belt and pipe-to-ground distances by configurable startup multipliers without adding or duplicating prototypes.",
+  "dependencies": [
+    "base >= 2.0"
+  ]
+}
