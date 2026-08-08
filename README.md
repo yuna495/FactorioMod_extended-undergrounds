@@ -1,6 +1,6 @@
 # Extended Undergrounds
 
-Extended Undergrounds extends existing underground belts and pipe-to-ground entities in Factorio 2.0. It can also add darker deep variants that use a separate underground layer from the normal version.
+Extended Undergrounds extends existing underground belts and pipe-to-ground entities in Factorio 2.1. It can also add darker deep variants that use a separate underground layer from the normal version.
 
 The distance multiplier feature only changes distance fields on existing prototypes. The deep feature adds new entities, items, and recipes derived from compatible existing underground belts and pipe-to-ground prototypes.
 
